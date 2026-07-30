@@ -1,0 +1,12 @@
+{
+  "name": "service-advisor-ui",
+  "version": "1.0.0",
+  "description": "Simple TypeScript UI to test the Service Advisor API",
+  "scripts": {
+    "build": "tsc",
+    "start": "npx http-server -c-1 . -p 5173"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
