@@ -17,11 +17,11 @@ Security & Logging
 - We do NOT persist user prompts. For traceability we log only a SHA256 hash of the user's input and basic metadata. No prompt content is written to disk or stored.
 
 Run API (dotnet 7+)
-- cd src/ServiceAdvisorApi
+- cd src/api
 - dotnet run
 
 Run UI
-- cd ui
+- cd src/ui
 - npm install
 - npm run build
 - Serve the ui directory (for quick test: npx http-server . -c-1 or any static server) and open index.html

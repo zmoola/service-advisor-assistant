@@ -1,4 +1,5 @@
-const apiUrl = window['API_URL'] || '/api/advisor';
+// eslint-disable-next-line ts(7015)
+const apiUrl = "https://localhost:61412/api/advisor"
 
 const form = document.getElementById('complaintForm') as HTMLFormElement;
 const input = document.getElementById('complaint') as HTMLTextAreaElement;

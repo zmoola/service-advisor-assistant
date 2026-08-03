@@ -11,7 +11,7 @@ namespace ServiceAdvisorApi.Services
     }
 
     public class AzureOpenAiClient
-n    {
+    {
         private readonly HttpClient _http;
         private readonly ILogger<AzureOpenAiClient> _logger;
         private readonly string _endpoint;
@@ -111,26 +111,26 @@ n    {
 
         private string SystemPrompt()
         {
-            return @"You are a service advisor assistant in an automotive workshop. You MUST respond with JSON only, no extra text. The JSON schema must be an object with these properties:
+            return @$"You are a service advisor assistant in an automotive workshop. You MUST respond with JSON only, no extra text. The JSON schema must be an object with these properties:
 1) rephrasedComplaint: A concise rephrasing of the customer's statement that workshop staff can act on.
-2) solutions: an array of objects each with: { issue: string, suggestedFix: string, confidence?: number }
+2) solutions: an array of objects each with: {"{ issue: string, suggestedFix: string, confidence?: number }"}
 3) note: optional short note for humans about ambiguities or required checks.
 
 Ensure:
 - Output valid JSON. Do not include markdown or explanatory text.
 - Provide 2-5 solution objects ordered by likelihood.
-- Use short, actionable suggestedFix phrases (eg. "Check brake pads for wear; measure rotor runout; replace pads if thickness < 3mm").
+- Use short, actionable suggestedFix phrases (eg. {"\"Check brake pads for wear; measure rotor runout; replace pads if thickness < 3mm\""}).
 - When uncertain, include a note describing what further diagnostic checks are recommended.
 
 Example output:
-{
-  "rephrasedComplaint": "Car pulls to the right under braking; customer hears squeal from front right.",
-  "solutions": [
-    { "issue": "Front right brake pad worn or foreign object", "suggestedFix": "Inspect front right brake pad and rotor; clean or replace pad as needed; test drive.", "confidence": 0.7 },
-    { "issue": "Wheel bearing play", "suggestedFix": "Check front right wheel bearing for play and noise; replace bearing if worn.", "confidence": 0.2 }
+{"{"}
+  {"\"rephrasedComplaint\": \"Car pulls to the right under braking; customer hears squeal from front right.\","}
+  {"\"solutions\": ["}
+    {"{ \"issue\": \"Front right brake pad worn or foreign object\", \"suggestedFix\": \"Inspect front right brake pad and rotor; clean or replace pad as needed; test drive.\", \"confidence\": 0.7 },"}
+    {"{ \"issue\": \"Wheel bearing play\", \"suggestedFix\": \"Check front right wheel bearing for play and noise; replace bearing if worn.\", \"confidence\": 0.2 }"}
   ],
-  "note": "Ask customer if the noise occurs at slow speeds only and whether braking force changes when cold."
-}
+  {"\"note\": \"Ask customer if the noise occurs at slow speeds only and whether braking force changes when cold.\""}
+{"}"} 
 ";
         }
     }
