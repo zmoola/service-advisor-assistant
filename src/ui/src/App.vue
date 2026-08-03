@@ -18,7 +18,7 @@ const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
 const result = ref<AnalysisResponse | null>(null);
 
-const apiBaseUrl = (import.meta.env.VITE_API_URL ?? 'https://api-service-advisor-gub3c7cxbeeqfggz.southafricanorth-01.azurewebsites.net').trim();
+const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '').trim();
 const hasSolutions = computed(() => Array.isArray(result.value?.solutions) && result.value!.solutions!.length > 0);
 
 async function analyzeComplaint() {
