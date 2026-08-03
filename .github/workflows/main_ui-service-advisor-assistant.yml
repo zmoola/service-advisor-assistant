@@ -1,8 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - ui-service-advisor-assistant
-
+name: UI Deployment
 on:
   push:
     branches:
@@ -12,6 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src/ui
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -22,6 +24,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '24.x'
+
+      - name: Set environment variables
+        run: |
+          echo "VITE_API_URL=${{ vars.VITE_API_URL }}" >> $GITHUB_ENV
 
       - name: npm install, build, and test
         run: |
