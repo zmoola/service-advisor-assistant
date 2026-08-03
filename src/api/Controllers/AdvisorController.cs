@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceAdvisorApi.Models;
 using ServiceAdvisorApi.Services;
@@ -19,6 +20,7 @@ public class AdvisorController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] AdvisorRequest request)
     {

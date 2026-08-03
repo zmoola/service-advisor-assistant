@@ -1,6 +1,5 @@
 using Azure.AI.OpenAI;
-using Azure.Identity;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ServiceAdvisorApi.Services;
 using System.ClientModel;
 
@@ -28,6 +27,20 @@ builder.Services.AddCors(opt =>
     });
 });
 
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer()
+.AddGoogle(opt =>
+{
+    opt.ClientId = builder.Configuration.GetSection("GOOGLE_CLIENT_ID").Value ?? throw new ArgumentException("Missing GOOGLE_CLIENT_ID env var");
+    opt.ClientSecret = builder.Configuration.GetSection("GOOGLE_CLIENT_SECRET").Value ?? throw new ArgumentException("Missing GOOGLE_CLIENT_SECRET env var");
+});
+builder.Services.AddAuthorization();
+
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
@@ -40,6 +53,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
