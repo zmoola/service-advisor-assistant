@@ -1,8 +1,5 @@
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using Azure;
-using Azure.Core;
 using Azure.AI.OpenAI;
 using ServiceAdvisorApi.Models;
 using OpenAI.Chat;

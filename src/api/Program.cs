@@ -1,5 +1,4 @@
 using Azure.AI.OpenAI;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ServiceAdvisorApi.Services;
 using System.ClientModel;
 
