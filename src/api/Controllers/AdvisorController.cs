@@ -20,7 +20,6 @@ public class AdvisorController : ControllerBase
         _logger = logger;
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] AdvisorRequest request)
     {
