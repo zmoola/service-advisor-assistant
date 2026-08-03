@@ -10,10 +10,10 @@ namespace ServiceAdvisorApi.Controllers;
 [Route("api/[controller]")]
 public class AdvisorController : ControllerBase
 {
-    private readonly AzureOpenAiClient _openAi;
+    private readonly LLMClient _openAi;
     private readonly ILogger<AdvisorController> _logger;
 
-    public AdvisorController(AzureOpenAiClient openAi, ILogger<AdvisorController> logger)
+    public AdvisorController(LLMClient openAi, ILogger<AdvisorController> logger)
     {
         _openAi = openAi;
         _logger = logger;

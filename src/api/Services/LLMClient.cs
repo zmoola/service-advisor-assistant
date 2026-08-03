@@ -1,7 +1,12 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Azure;
+using Azure.Core;
+using Azure.AI.OpenAI;
 using ServiceAdvisorApi.Models;
+using OpenAI.Chat;
+using System.ClientModel;
 
 namespace ServiceAdvisorApi.Services
 {
@@ -10,71 +15,57 @@ namespace ServiceAdvisorApi.Services
         public AzureOpenAiClientException(string message) : base(message) { }
     }
 
-    public class AzureOpenAiClient
+    public class LLMClient
     {
-        private readonly HttpClient _http;
-        private readonly ILogger<AzureOpenAiClient> _logger;
-        private readonly string _endpoint;
-        private readonly string _key;
+        private readonly ILogger<LLMClient> _logger;
         private readonly string _deployment;
+        private readonly AzureOpenAIClient _openAiClient;
+        private readonly ChatClient _chatClient;
 
-        public AzureOpenAiClient(HttpClient http, ILogger<AzureOpenAiClient> logger)
+        public LLMClient(AzureOpenAIClient openAiClient, IConfiguration configuration, ILogger<LLMClient> logger)
         {
-            _http = http;
             _logger = logger;
-
-            _endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new ArgumentException("Missing AZURE_OPENAI_ENDPOINT env var");
-            _key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY") ?? throw new ArgumentException("Missing AZURE_OPENAI_KEY env var");
-            _deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT") ?? throw new ArgumentException("Missing AZURE_OPENAI_DEPLOYMENT env var");
-
-            if (!_endpoint.StartsWith("http")) _endpoint = "https://" + _endpoint;
+            _openAiClient = openAiClient;
+            _deployment = configuration.GetSection("AZURE_OPENAI_DEPLOYMENT").Value ?? throw new ArgumentException("Missing AZURE_OPENAI_DEPLOYMENT env var");
+            _chatClient = _openAiClient.GetChatClient(_deployment);
         }
 
         public async Task<AdvisorResponse?> AnalyzeComplaintAsync(string complaint)
         {
-            // Keep temperature low for deterministic, repeatable outputs
-            var requestBody = new
+            // Use Azure.AI.OpenAI SDK to call the deployment
+            var messages = new List<ChatMessage>
             {
-                messages = new[] {
-                    new { role = "system", content = SystemPrompt() },
-                    new { role = "user", content = complaint }
-                },
-                max_tokens = 700,
-                temperature = 0.1
+                new SystemChatMessage(SystemPrompt()),
+                new UserChatMessage(complaint)
             };
 
-            var url = $"{_endpoint.TrimEnd('/')}/openai/deployments/{_deployment}/chat/completions?api-version=2023-05-15";
-
-            var json = JsonSerializer.Serialize(requestBody);
-            using var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-            _http.DefaultRequestHeaders.Clear();
-            _http.DefaultRequestHeaders.Add("api-key", _key);
-
-            HttpResponseMessage response;
+            ClientResult<ChatCompletion>? response = null;
             try
             {
-                response = await _http.PostAsync(url, httpContent);
+                response = await _chatClient.CompleteChatAsync(messages);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "HTTP request to Azure OpenAI failed");
+                _logger.LogError(ex, "Azure OpenAI SDK call failed");
                 throw new AzureOpenAiClientException("Failed to contact Azure OpenAI service");
-            }
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogError("Azure OpenAI returned {Status}: {Body}", response.StatusCode, responseContent);
-                throw new AzureOpenAiClientException("Azure OpenAI returned an error");
             }
 
             try
             {
-                using var doc = JsonDocument.Parse(responseContent);
-                var root = doc.RootElement;
-                var choice = root.GetProperty("choices")[0];
-                var assistantMsg = choice.GetProperty("message").GetProperty("content").GetString() ?? string.Empty;
+                var completion = response?.Value;
+                if (completion == null || !completion.Content.Any())
+                {
+                    _logger.LogError("Azure OpenAI returned empty response");
+                    throw new AzureOpenAiClientException("Azure OpenAI returned an empty response");
+                }
+
+                if (completion.Content[0].Kind != ChatMessageContentPartKind.Text)
+                {
+                    _logger.LogError("Azure OpenAI returned non-text content");
+                    throw new AzureOpenAiClientException("Azure OpenAI returned non-text content");
+                }
+
+                var assistantMsg = completion.Content[0].Text ?? string.Empty;
 
                 // The assistant is instructed to return JSON only. Try to parse it.
                 var trimmed = assistantMsg.Trim();
@@ -92,8 +83,8 @@ namespace ServiceAdvisorApi.Services
                     trimmed = sb.ToString().Trim();
                 }
 
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var parsed = JsonSerializer.Deserialize<AdvisorResponse>(trimmed, options);
+                var optionsJson = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var parsed = JsonSerializer.Deserialize<AdvisorResponse>(trimmed, optionsJson);
                 if (parsed == null)
                 {
                     _logger.LogError("Failed to parse assistant response as JSON. Raw: {Raw}", assistantMsg);
@@ -104,7 +95,7 @@ namespace ServiceAdvisorApi.Services
             }
             catch (JsonException je)
             {
-                _logger.LogError(je, "Failed to parse Azure OpenAI response JSON: {Body}", responseContent);
+                _logger.LogError(je, "Failed to parse Azure OpenAI response JSON: {Body}", response?.Value?.ToString());
                 throw new AzureOpenAiClientException("Failed to parse response from language model");
             }
         }
