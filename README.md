@@ -2,13 +2,32 @@
 
 Service Advisor Assistant is a small demo application that helps turn a customer’s vehicle complaint into a structured workshop-style analysis. A Vue 3 front end sends the complaint to an ASP.NET Core API, which calls Azure OpenAI and returns a concise rephrasing plus likely solutions.
 
+The interactive solution is deployed to Azure: [**Hosted Application**](https://wonderful-ocean-096a3d010.7.azurestaticapps.net/)
+
 ## Considerations
 In attempting this solution, I decided that this functionality would not necessarily be a standalone solution, but woult be a tool/service within a greater CRM solution. As such I've kept the implementation extremely light and decided to stick to the base ask.
+
+The deployed solution expects a free-text user complaint as an input, and uses that in combination with a structured system prompt to query an LLM in order to re-work the information into something usable when creating a work order/job card.
+
+![Example usage](resources/Screenshot%202026-08-03%20223813.png)
+
+## How I built the solution
+- After reading the brief, I decided that the simplest approach was to create a blank repository and prompt the GitHub Copilot chat UI to create the initial repository ([Initial Prompt](resources/Initial_prompt.md))
+- Once the initial build was completed by the CoPilot agent, I cloned the repository and went over the implementation in large strokes to identify any issues or limitations.
+- The agent built the API in .Net 7, so I updated it to .Net 10 to take advantage of the latest capabilities and ensure a simpler integration with the Azure services.
+- The logic to interface with the OpenAI service was done using a manual HTTP request/response pattern. I switched it out for using the Azure OpenAI SDK for simplicity and reliablility.
+- The front-end was initially scaffolded with a very basix NPX implementation. I prompted the local CoPilot agent to rewrite it using Vue for better readability and deployability to Azure.
 
 ## What the project includes
 - Backend API: ASP.NET Core Web API in src/api
 - Frontend UI: Vite + Vue 3 + TypeScript in src/ui
 - Pattern: a simple request/response flow where the UI posts a complaint to the API and receives structured JSON
+
+## Hosted Application Details
+The hosted solution is deployed to an Azure resource group using the following services:
+- Azure Web App for the API
+- Azure Static App for the UI component
+- Azure OpenAI Service for the hosted LLM (gpt-5 mini)
 
 ## Project structure
 - src/api/Program.cs — app setup, dependency injection, CORS, and controller mapping
