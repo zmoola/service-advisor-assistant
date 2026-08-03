@@ -1,12 +1,20 @@
 {
   "name": "service-advisor-ui",
   "version": "1.0.0",
-  "description": "Simple TypeScript UI to test the Service Advisor API",
+  "private": true,
+  "description": "Vue 3 + TypeScript UI for the Service Advisor API",
   "scripts": {
-    "build": "tsc",
-    "start": "npx http-server -c-1 . -p 5173"
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "@types/node": "^22.10.1",
+    "@vitejs/plugin-vue": "^5.0.1",
+    "typescript": "^5.7.3",
+    "vite": "^5.4.10"
   }
 }
