@@ -12,6 +12,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src/api
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -22,9 +25,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
-
-      - name: Switch to the API project directory
-        run: cd src/api
 
       - name: Restore dependencies
         run: dotnet restore

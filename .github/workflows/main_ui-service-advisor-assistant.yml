@@ -12,6 +12,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src/ui
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -22,9 +25,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '24.x'
-
-      - name: Switch to the UI project directory
-        run: cd src/ui
 
       - name: npm install, build, and test
         run: |
