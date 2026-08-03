@@ -1,6 +1,7 @@
 # Ignore build output and user secrets
-bin/
-obj/
+**.vs/
+**/bin/
+**/obj/
 **/dist/
 node_modules/
 .env
